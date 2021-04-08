@@ -1,0 +1,12 @@
+<launch>
+    <!-- SAVING only sensors input -->
+    <node pkg="rosbag" type="record" name="rosbag_record_sensors_only"
+    args="record -o $(env HOME)/$(optenv date) /clock /rosout /rosout_agg /diagnostics
+                                                /cmd_vel /wheel_odom /joint_states
+                                                /camera/image_raw/compressed /camera/camera_info
+                                                /zed2/left/image_rect_color /zed2/left/camera_info
+                                                /zed2/right/image_rect_color /zed2/right/camera_info
+                                                /zed2/depth/depth_registered /zed2/depth/camera_info
+                                                /zed2/point_cloud/cloud_registered
+                                                /zed2/imu/data"/>
+</launch>

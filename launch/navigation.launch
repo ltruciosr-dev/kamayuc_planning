@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launch>
+    <arg name="rover_frame" value="base_link"/>
+    <arg name="fake_rover_frame" value="fake"/>
+    <arg name="odom_topic" default="/ekf_local/odometry" />
+    <arg name="cmd_vel_topic" default="/cmd_vel" />
+
+    <!-- Fake-robot TF -->
+    <node pkg="kamayuc_planning" type="base_link_flattener" name="base_link_flattener">
+        <param name="frame" value="$(arg rover_frame)"/>
+    </node>
+
+    <!-- Fake-robot PointCloud2 -->
+    <!-- <node pkg="kamayuc_planning" type="point_cloud_filter" name="pc_filter" output="screen"> -->
+    <!-- <node pkg="kamayuc_planning" type="point_cloud_zfilter" name="pc_zfilter" output="screen"> -->
+    <node pkg="kamayuc_planning" type="point_cloud_slope" name="pc_slope" output="screen">
+        <param name="frame" value="$(arg fake_rover_frame)"/>
+        <param name="flat_height" value="-0.25"/>
+        <param name="slope" value="1.0"/>
+        <param name="scale" value="2"/>
+        <param name="points" value="/zed2/point_cloud/cloud_registered"/>
+    </node>
+
+    <!-- move-base -->
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base">
+        <param name="base_global_planner" value="navfn/NavfnROS"/>
+        <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS"/>
+        <rosparam file="$(find kamayuc_planning)/config/move_base/planner.yaml" command="load" />
+        <rosparam file="$(find kamayuc_planning)/config/move_base/costmap_global.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find kamayuc_planning)/config/move_base/costmap_common.yaml" command="load" ns="global_costmap" />
+
+        <rosparam file="$(find kamayuc_planning)/config/move_base/costmap_local.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find kamayuc_planning)/config/move_base/costmap_common.yaml" command="load" ns="local_costmap" />
+
+        <remap from="odom" to="$(arg odom_topic)"/>
+        <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
+    </node>
+
+  <!--node name="rviz" pkg="rviz" type="rviz" args="-d $(find kamayuc_planning)/rviz/planner.rviz" output="screen" /--> 
+
+</launch>
